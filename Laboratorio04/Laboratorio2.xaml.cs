@@ -28,20 +28,34 @@ namespace Laboratorio04
         }
         private void BtnCargarCategorias_Click(object sender, RoutedEventArgs e)
         {
+            List<Categoria> listaCategorias = new List<Categoria>();
+
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 try
                 {
                     conn.Open();
-
                     SqlCommand cmd = new SqlCommand("ListarCategorias", conn);
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-                    DataTable dt = new DataTable();
-                    adapter.Fill(dt);
+                    SqlDataReader reader = cmd.ExecuteReader();
 
-                    dgCategorias.ItemsSource = dt.DefaultView;
+                    while (reader.Read())
+                    {
+                        Categoria cat = new Categoria
+                        {
+                            IdCategoria = reader.GetInt32(0),
+                            NombreCategoria = reader.GetString(1),
+                            Descripcion = reader.GetString(2),
+                            Activo = reader.GetBoolean(3),
+                            CodCategoria = reader.GetString(4)
+                        };
+
+                        listaCategorias.Add(cat);
+                    }
+
+                    reader.Close();
+                    dgCategorias.ItemsSource = listaCategorias;
                 }
                 catch (SqlException ex)
                 {
@@ -49,6 +63,7 @@ namespace Laboratorio04
                 }
             }
         }
+
         private void BtnAtras_Click(object sender, RoutedEventArgs e)
         {
             MainWindow v1 = new MainWindow();

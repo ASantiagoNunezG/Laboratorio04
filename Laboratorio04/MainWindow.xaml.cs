@@ -25,20 +25,40 @@ namespace Laboratorio04
         }
         private void BtnCargar_Click(object sender, RoutedEventArgs e)
         {
+            List<Producto> listaProductos = new List<Producto>();
+
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 try
                 {
                     conn.Open();
-
                     SqlCommand cmd = new SqlCommand("ListarProductos", conn);
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-                    DataTable dt = new DataTable();
-                    adapter.Fill(dt);
+                    SqlDataReader reader = cmd.ExecuteReader();
 
-                    dgProductos.ItemsSource = dt.DefaultView;
+                    while (reader.Read())
+                    {
+                        Producto prod = new Producto
+                        {
+                            IdProducto = reader.GetInt32(0),
+                            NombreProducto = reader.IsDBNull(1) ? null : reader.GetString(1),
+                            IdProveedor = reader.GetInt32(2),
+                            IdCategoria = reader.GetInt32(3),
+                            CantidadPorUnidad = reader.IsDBNull(4) ? null : reader.GetString(4),
+                            PrecioUnidad = reader.GetDecimal(5),
+                            UnidadesEnExistencia = reader.GetInt16(6),
+                            UnidadesEnPedido = reader.GetInt16(7),
+                            NivelNuevoPedido = reader.GetInt16(8),
+                            Suspendido = reader.GetInt16(9),
+                            CategoriaProducto = reader.IsDBNull(10) ? null : reader.GetString(10)
+                        };
+
+                        listaProductos.Add(prod);
+                    }
+
+                    reader.Close();
+                    dgProductos.ItemsSource = listaProductos;
                 }
                 catch (SqlException ex)
                 {
@@ -46,6 +66,7 @@ namespace Laboratorio04
                 }
             }
         }
+
         private void BtnSiguiente_Click(object sender, RoutedEventArgs e)
         {
             Laboratorio2 v2 = new Laboratorio2();
